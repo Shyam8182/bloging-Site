@@ -1,0 +1,100 @@
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import Input from './Input'
+import CButone from './CButone'
+import { useDispatch } from 'react-redux'
+import authServise from '../appwrite/auth'
+import { useForm } from 'react-hook-form'
+import { login } from '../stor/authSlieses'
+
+function Sinup() {
+    const nav = useNavigate()
+    const dispach = useDispatch()
+    const [error, setError] = useState(null)
+    const { register, handleSubmit } = useForm()
+
+
+    const creat = async (data) => {
+        try {
+            setError("")
+            const userData = await authServise.createAccount(data)
+            if (userData) {
+                const user = await authServise.getCurentUSer()
+                if (user) dispach(login(user))
+                nav("/")
+            }
+
+
+        } catch (error) {
+            setError(error)
+        }
+    }
+
+    return (
+        <div className="flex items-center justify-center">
+            <div className={`mx-auto w-full max-w-lg bg-gray-700 rounded-xl p-10 border border-black/10`}>
+                <div className="mb-2 flex justify-center">
+                    <span className="inline-block w-full max-w-[100px]">
+                        {/* <Logo width="100%" /> */}
+                    </span>
+                </div>
+                <h2 className="text-center text-2xl font-bold leading-tight">Sign up to create account</h2>
+                <p className="mt-2 text-center text-base text-black/60">
+                    Already have an account?&nbsp;
+                    <Link
+                        to="/login"
+                        className="font-medium text-primary transition-all duration-200 hover:underline"
+                    >
+                        Sign In
+                    </Link>
+                </p>
+                {error && (
+                    <p className='text-red-600 mt-8 text-center'>
+                        {typeof error === 'string' ? error : error.message || "Something went wrong"}
+                    </p>
+                )}
+
+                <form onSubmit={handleSubmit(creat)}>
+                    <div className='space-y-5'>
+                        <Input
+                            label="Full Name"
+                            placeholder="Enter your Full Name"
+                            type="name"
+                            {...register("name", {
+                                required: true
+                            })}
+                        />
+                        <Input
+                            label="Email"
+                            placeholder="Enter your email"
+                            type="email"
+                            {...register("email", {
+                                required: true,
+                                validate: {
+                                    matchPatern: (value) => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
+                                        "Email address must be a valid address",
+                                }
+                            })}
+                        />
+                        <Input
+                            label="Password"
+                            placeholder="Enter password"
+                            type="text"
+                            {...register("password", 
+                                
+                            )}
+                        />
+                        <CButone
+                            type="submit"
+                            className='w-full '
+                            childern={" Creat Account"}
+                        > </CButone>
+                        {/* <button className='bg-amber-200 rounded-4xl lg:' type='submit'>sine</button> */}
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
+export default Sinup
